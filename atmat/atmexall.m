@@ -57,7 +57,7 @@ MEXCOMMAND = ['mex ',PLATFORMOPTION,'-outdir ',cdir,' ',fullfile(cdir,'nafflib.c
 disp(MEXCOMMAND);
 eval(MEXCOMMAND);
 
-
+addpath(PASSMETHODDIR);
 % Navigate to the directory that contains pass-methods 
 mexpassmethod('all',PLATFORMOPTION);
 warning(oldwarns.state,oldwarns.identifier);

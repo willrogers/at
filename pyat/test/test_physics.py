@@ -50,10 +50,10 @@ def test_find_orbit4_with_two_refpts(ring):
 
 @pytest.mark.parametrize('refpts', ([145], [20], [1, 2, 3]))
 def test_find_m44_returns_same_answer_as_matlab(ring, refpts):
-    m44, mstack = physics.find_m44(ring, dp=DP, refpts=refpts)
-
-    numpy.testing.assert_allclose(m44[:4], M44_MATLAB[:4], rtol=1e-5, atol=1e-7)
+    # Do this before find_m44() as the call may change refpts.
     stack_size = 0 if refpts is None else len(refpts)
+    m44, mstack = physics.find_m44(ring, dp=DP, refpts=refpts)
+    numpy.testing.assert_allclose(m44[:4], M44_MATLAB[:4], rtol=1e-5, atol=1e-7)
     assert mstack.shape == (4, 4, stack_size)
 
 

@@ -17,7 +17,9 @@ def uint32_refpts(refpts, n_elements):
     Return a uint32 numpy array with contents as the indices of the selected
     elements.  This is used for indexing a lattice using explicit indices.
     """
-    if isinstance(refpts, numpy.ndarray) and refpts.dtype == bool:
+    if refpts is None:
+        urefpts = numpy.array([n_elements], dtype=numpy.uint32)
+    elif isinstance(refpts, numpy.ndarray) and refpts.dtype == bool:
         urefpts = numpy.array(numpy.flatnonzero(refpts), dtype=numpy.uint32)
     else:
         if not isinstance(refpts, (collections.Sequence, numpy.ndarray)):

@@ -42,15 +42,15 @@ def find_orbit4(ring, dp=0.0, refpts=None):
     1. change the longitudinal momentum dP (cavities , magnets with radiation)
     2. have any time dependence (localized impedance, fast kickers etc)
 
-    findorbit4(RING, dP) is 4x1 vector - fixed point at the
-    entrance of the 1-st element of the RING (x,px,y,py)
+    Args:
+        ring: AT lattice object
+        dp: momentum deviation
+        refpts: indices of elements to provide fixed points at - see lattice.py
 
-    findorbit4(RING, dP, refpts) is 4-by-Length(refpts)
-    array of column vectors - fixed points (x,px,y,py)
-    at the entrance of each element indexed refpts array.
-    refpts is an array of increasing indexes that select elements
-    from the range 0 to length(RING).
-    See further explanation of refpts in the 'help' for FINDSPOS
+    Returns:
+        tuple of:
+            * closed_orbit ((4, ) array)
+            * array of fixed points (4 x len(refpts) array)
 
     """
     # We seek
@@ -88,7 +88,7 @@ def find_orbit4(ring, dp=0.0, refpts=None):
         j4 = (out_mat[:4, :4] - ref_out.reshape((4, 1))) / STEP_SIZE
         a = j4 - numpy.identity(4)  # f'(r_n) - 1
         b = ref_out - r_in[:4]
-        b_over_a, _, _, _ = numpy.linalg.lstsq(a, b)
+        b_over_a, _, _, _ = numpy.linalg.lstsq(a, b, rcond=None)
         r_next = r_in - numpy.append(b_over_a, numpy.zeros((2,)))
         # determine if we are close enough
         change = numpy.linalg.norm(r_next - r_in)
@@ -105,11 +105,33 @@ def find_orbit4(ring, dp=0.0, refpts=None):
 def find_m44(ring, dp=0.0, refpts=None, orbit4=None, XYStep=XYDEFSTEP):
     """
     Determine the transfer matrix for ring, by first finding the closed orbit.
+
+    Args:
+        ring: AT lattice object
+        dp: momentum deviation
+        refpts: indices of elements to provide matrices at - see lattice.py
+        orbit4: closed_orbit if previously calculated
+        xystep: delta used for differentiation
+
+    Returns:
+        tuple of
+            * m44 - transfer matrix (4 x 4 array)
+            * mstack - transfer matrices at elements in refpts
+                (4 x len(refpts) array)
+
     """
-    refpts = lattice.uint32_refpts(refpts, len(ring))
-    nrefs = refpts.size
-    if refpts[-1] != len(ring):
-        refpts = numpy.append(refpts, [len(ring)])
+    # Make sure the last element in the ring is included as this is used to
+    # calculate the overall transfer matrix. Remember if this is to be
+    # included in mstack.
+    if refpts is None:
+        refpts = [len(ring)]
+        last_requested = False
+    elif refpts[-1] != len(ring):
+        refpts.append(len(ring))
+        last_requested = False
+    else:
+        last_requested = True
+    np_refpts = lattice.uint32_refpts(refpts, len(ring))
     keeplattice = False
     if orbit4 is None:
         orbit4, _ = find_orbit4(ring, dp)
@@ -124,14 +146,17 @@ def find_m44(ring, dp=0.0, refpts=None, orbit4=None, XYStep=XYDEFSTEP):
     # Add the deltas to multiple copies of the closed orbit
     in_mat = orbit6 + dmat
 
-    out_mat = at.lattice_pass(ring, in_mat, refpts=refpts,
+    out_mat = at.lattice_pass(ring, in_mat, refpts=np_refpts,
                               keep_lattice=keeplattice)
     # out_mat: 8 particles at n refpts for one turn
     tmat3 = out_mat[:4, :, :, 0]
     # (x + d) - (x - d) / d
     mstack = (tmat3[:, :4, :] - tmat3[:, 4:8, :]) / XYStep
     m44 = mstack[:, :, -1]
-    return m44, mstack[:, :, :nrefs]
+    # If the last element wasn't requested in refpts, remove it from mstack.
+    if not last_requested:
+        mstack = mstack[:, :, :-1]
+    return m44, mstack
 
 
 def betatron_phase_unwrap(m):

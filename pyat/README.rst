@@ -42,7 +42,7 @@ Comparing results with Matlab
 -----------------------------
 
 There is a second set of tests that require a Matlab licence and allows
-comparing results directly with a Matlab session.  See test_matlab/README
+comparing results directly with a Matlab session.  See ``test_matlab/README``
 for information.
 
 
