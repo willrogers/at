@@ -149,9 +149,9 @@ def find_m44(ring, dp=0.0, refpts=None, orbit4=None, XYStep=XYDEFSTEP):
     out_mat = at.lattice_pass(ring, in_mat, refpts=np_refpts,
                               keep_lattice=keeplattice)
     # out_mat: 8 particles at n refpts for one turn
-    tmat3 = out_mat[:4, :, :, 0]
+    out_mat4 = out_mat[:4, :, :, 0]
     # (x + d) - (x - d) / d
-    mstack = (tmat3[:, :4, :] - tmat3[:, 4:8, :]) / XYStep
+    mstack = (out_mat4[:, :4, :] - out_mat4[:, 4:8, :]) / XYStep
     m44 = mstack[:, :, -1]
     # If the last element wasn't requested in refpts, remove it from mstack.
     if not last_requested:
@@ -159,13 +159,13 @@ def find_m44(ring, dp=0.0, refpts=None, orbit4=None, XYStep=XYDEFSTEP):
     return m44, mstack
 
 
-def betatron_phase_unwrap(m):
+def betatron_phase_unwrap(array):
     """
     Unwrap negative jumps in betatron.
     """
-    dp = numpy.diff(m)
-    jumps = numpy.append([0], dp) < 0
-    return m + numpy.cumsum(jumps) * numpy.pi
+    diffs = numpy.diff(array)
+    jumps = numpy.append([0], diffs) < 0
+    return array + numpy.cumsum(jumps) * numpy.pi
 
 
 def get_twiss(ring, dp=0.0, refpts=None, get_chrom=False, ddp=DDP):
