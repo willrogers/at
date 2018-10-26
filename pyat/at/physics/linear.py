@@ -217,9 +217,9 @@ def linopt(ring, dp=0.0, refpts=None, get_chrom=False, orbit=None, keep_lattice=
         All values are given at the entrance of each element specified in refpts.
 
     REFERENCES
-        [1] D.Edwars,L.Teng IEEE Trans.Nucl.Sci. NS-20, No.3, p.885-888, 1973
+        [1] D.Edwards, L.Teng IEEE Trans.Nucl.Sci. NS-20, No.3, p.885-888, 1973
         [2] E.Courant, H.Snyder
-        [3] D.Sagan, D.Rubin Phys.Rev.Spec.Top.-Accelerators and beams, vol.2 (1999)
+        [3] D.Sagan, D.Rubin Phys.Rev.Spec.Top. Accelerators and beams, vol.2 (1999)
 
     See also get_twiss
 
