@@ -7,6 +7,7 @@ responsibility to ensure that the appropriate attributes are present.
 """
 import numpy
 import itertools
+import collections
 
 
 def _array(value, shape=(-1,), dtype=numpy.float64):
@@ -30,21 +31,48 @@ def _nop(value):
     return value
 
 
+def ordered_update(existing, new):
+    for k, v in new.items():
+        existing[k] = v
+
+
 class Element(object):
-    REQUIRED_ATTRIBUTES = ['FamName']
-    CONVERSIONS = dict(R1=_array66, R2=_array66, T1=lambda v: _array(v, (6,)), T2=lambda v: _array(v, (6,)))
+    REQUIRED_ATTRIBUTES = collections.OrderedDict()
+    OPTIONAL_ATTRIBUTES = collections.OrderedDict()
+    _REQUIRED_ATTRIBUTES = collections.OrderedDict()
+    _REQUIRED_ATTRIBUTES['FamName'] = str
+    _REQUIRED_ATTRIBUTES['PassMethod'] = str
 
-    def __init__(self, family_name, Length=0.0, PassMethod='IdentityPass', **kwargs):
-        self.FamName = family_name
-        self.Length = float(Length)
-        self.PassMethod = PassMethod
+    _OPTIONAL_ATTRIBUTES = dict(Length=float,
+                                R1=_array66,
+                                R2=_array66,
+                                T1=lambda v: _array(v, (6,)),
+                                T2=lambda v: _array(v, (6,)))
 
-        for (key, value) in kwargs.items():
-            try:
-                setattr(self, key, self.CONVERSIONS.get(key, _nop)(value))
-            except Exception as exc:
-                exc.args = ('In element {0}, parameter {1}: {2}'.format(family_name, key, exc),)
-                raise
+    def __init_subclass__(cls, *args, **kwargs):
+        print('before {}'.format(cls._REQUIRED_ATTRIBUTES))
+        print('before 2 {}'.format(cls.REQUIRED_ATTRIBUTES))
+        ordered_update(cls.REQUIRED_ATTRIBUTES, cls._REQUIRED_ATTRIBUTES)
+        print('after {}'.format(cls.REQUIRED_ATTRIBUTES))
+        ordered_update(cls.OPTIONAL_ATTRIBUTES, cls._OPTIONAL_ATTRIBUTES)
+        if isinstance(cls, Element.__class__):
+            return super(Element, cls).__new__(cls)
+        else:
+            return super(cls, cls).__new__(cls, *args, **kwargs)
+
+    def __init__(self, *args, **kwargs):
+        print(self.REQUIRED_ATTRIBUTES)
+        print(self.OPTIONAL_ATTRIBUTES)
+        pos_args = list(zip(self.REQUIRED_ATTRIBUTES.keys(), args))
+        print(pos_args)
+        for i in range(len(pos_args), len(self.REQUIRED_ATTRIBUTES)):
+            k = list(self.REQUIRED_ATTRIBUTES.keys())[i]
+            print('i {} k {}'.format(i, k))
+            pos_args.append((k, kwargs.pop(k)))
+
+        for k, v in kwargs.items():
+            conv = self.OPTIONAL_ATTRIBUTES.get(k, _nop)
+            setattr(self, k, conv(v))
 
     def __str__(self):
         keywords = ('{0:>16} : {1!r}'.format(k, v) for k, v in self.__dict__.items())
@@ -79,8 +107,8 @@ class Monitor(Element):
 
 class Aperture(Element):
     """pyAT aperture element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Limits']
-    CONVERSIONS = dict(Element.CONVERSIONS, Limits=lambda v: _array(v, (4,)))
+    _REQUIRED_ATTRIBUTES = dict(Limits=lambda v: _array(v, (4,)))
+    _OPTIONAL_ATTRIBUTES = {}
 
     def __init__(self, family_name, limits, **kwargs):
         kwargs.setdefault('PassMethod', 'AperturePass')
@@ -89,21 +117,20 @@ class Aperture(Element):
 
 class Drift(Element):
     """pyAT drift space element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length']
+    _REQUIRED_ATTRIBUTES = dict(Length=str)
+    _OPTIONAL_ATTRIBUTES = {}
 
-    def __init__(self, family_name, length, **kwargs):
-        """Drift(FamName, Length, **keywords)
-        """
-        kwargs.setdefault('PassMethod', 'DriftPass')
-        super(Drift, self).__init__(family_name, Length=length, **kwargs)
+#    def __init__(self, family_name, length, **kwargs):
+#        """Drift(FamName, Length, **keywords)
+#        """
+#        kwargs.setdefault('PassMethod', 'DriftPass')
+#        super(Drift, self).__init__(family_name, Length=length, **kwargs)
 
 
 class ThinMultipole(Element):
     """pyAT thin multipole element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['PolynomA',
-                                                         'PolynomB']
-    CONVERSIONS = dict(Element.CONVERSIONS, MaxOrder=_int,
-                       PolynomB=_array, PolynomA=_array)
+    _REQUIRED_ATTRIBUTES = dict(PolynomA=_array, PolynomB=_array)
+    _OPTIONAL_ATTRIBUTES = dict(MaxOrder=_int)
 
     def __init__(self, family_name, poly_a, poly_b, MaxOrder=0, **kwargs):
         """ThinMultipole(FamName, PolynomA, PolynomB, **keywords)
@@ -123,10 +150,8 @@ class ThinMultipole(Element):
 
 class Multipole(ThinMultipole):
     """pyAT multipole element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length',
-                                                         'PolynomA',
-                                                         'PolynomB']
-    CONVERSIONS = dict(ThinMultipole.CONVERSIONS, NumIntSteps=_int)
+    _REQUIRED_ATTRIBUTES = {}
+    _OPTIONAL_ATTRIBUTES = dict(NumIntSteps=_int)
 
     def __init__(self, family_name, length, poly_a, poly_b, NumIntSteps=10, **kwargs):
         """Multipole(FamName, Length, PolynomA, PolynomB, **keywords)
@@ -138,120 +163,119 @@ class Multipole(ThinMultipole):
         kwargs.setdefault('PassMethod', 'StrMPoleSymplectic4Pass')
         super(Multipole, self).__init__(family_name, poly_a, poly_b, Length=length, NumIntSteps=NumIntSteps, **kwargs)
 
-
-class Dipole(Multipole):
-    """pyAT dipole element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length', 'BendingAngle']
-    CONVERSIONS = dict(Multipole.CONVERSIONS, BendingAngle=_float, EntranceAngle=_float, ExitAngle=_float,
-                       FringeQuadEntrance=_int, FringeQuadExit=_int,
-                       FringeBendEntrance=_int, FringeBendExit=_int)
-
-    def __init__(self, family_name, length, BendingAngle, k=0.0, EntranceAngle=0.0, ExitAngle=0.0, **kwargs):
-        """Dipole(FamName, Length, BendingAngle, Strength=0, **keywords)
-
-        Available keywords:
-        'EntranceAngle' entrance angle (default 0.0)
-        'ExitAngle'     exit angle (default 0.0)
-        'PolynomB'      straight multipoles
-        'PolynomA'      skew multipoles
-        'MaxOrder'      Number of desired multipoles
-        'NumIntSteps'   Number of integration steps (default: 10)
-        """
-        poly_b = kwargs.pop('PolynomB', numpy.array([0, k]))
-        kwargs.setdefault('PassMethod', 'BendLinearPass')
-        super(Dipole, self).__init__(family_name, length, [], poly_b, BendingAngle=BendingAngle,
-                                     EntranceAngle=EntranceAngle, ExitAngle=ExitAngle, **kwargs)
-
-
-# Bend is a synonym of Dipole.
-Bend = Dipole
-
-
-class Quadrupole(Multipole):
-    """pyAT quadrupole element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length']
-    CONVERSIONS = dict(Multipole.CONVERSIONS, FringeQuadEntrance=_int, FringeQuadExit=_int)
-
-    def __init__(self, family_name, length, k=0.0, MaxOrder=1, **kwargs):
-        """Quadrupole(FamName, Length, Strength=0, **keywords)
-
-        Available keywords:
-        'PolynomB'      straight multipoles
-        'PolynomA'      skew multipoles
-        'MaxOrder'      Number of desired multipoles
-        'NumIntSteps'   Number of integration steps (default: 10)
-        """
-        poly_b = kwargs.pop('PolynomB', numpy.array([0, k]))
-        kwargs.setdefault('PassMethod', 'QuadLinearPass')
-        super(Quadrupole, self).__init__(family_name, length, [], poly_b, MaxOrder=MaxOrder, **kwargs)
-
-
-class Sextupole(Multipole):
-    """pyAT sextupole element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length']
-
-    def __init__(self, family_name, length, h=0.0, MaxOrder=2, **kwargs):
-        """Sextupole(FamName, Length, Strength=0, **keywords)
-
-        Available keywords:
-        'PolynomB'  straight multipoles
-        'PolynomA'  skew multipoles
-        'MaxOrder'  Number of desired multipoles
-        'NumIntSteps'   Number of integration steps (default: 10)
-        """
-        poly_b = kwargs.pop('PolynomB', [0, 0, h])
-        kwargs.setdefault('PassMethod', 'StrMPoleSymplectic4Pass')
-        super(Sextupole, self).__init__(family_name, length, [], poly_b, MaxOrder=MaxOrder, **kwargs)
-
-
-class Octupole(Multipole):
-    """pyAT octupole element, with no changes from multipole at present"""
-    REQUIRED_ATTRIBUTES = Multipole.REQUIRED_ATTRIBUTES
-
-
+#class Dipole(Multipole):
+#    """pyAT dipole element"""
+#    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length', 'BendingAngle']
+#    CONVERSIONS = dict(Multipole.CONVERSIONS, BendingAngle=_float, EntranceAngle=_float, ExitAngle=_float,
+#                       FringeQuadEntrance=_int, FringeQuadExit=_int,
+#                       FringeBendEntrance=_int, FringeBendExit=_int)
+#
+#    def __init__(self, family_name, length, BendingAngle, k=0.0, EntranceAngle=0.0, ExitAngle=0.0, **kwargs):
+#        """Dipole(FamName, Length, BendingAngle, Strength=0, **keywords)
+#
+#        Available keywords:
+#        'EntranceAngle' entrance angle (default 0.0)
+#        'ExitAngle'     exit angle (default 0.0)
+#        'PolynomB'      straight multipoles
+#        'PolynomA'      skew multipoles
+#        'MaxOrder'      Number of desired multipoles
+#        'NumIntSteps'   Number of integration steps (default: 10)
+#        """
+#        poly_b = kwargs.pop('PolynomB', numpy.array([0, k]))
+#        kwargs.setdefault('PassMethod', 'BendLinearPass')
+#        super(Dipole, self).__init__(family_name, length, [], poly_b, BendingAngle=BendingAngle,
+#                                     EntranceAngle=EntranceAngle, ExitAngle=ExitAngle, **kwargs)
+#
+#
+## Bend is a synonym of Dipole.
+#Bend = Dipole
+#
+#
+#class Quadrupole(Multipole):
+#    """pyAT quadrupole element"""
+#    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length']
+#    CONVERSIONS = dict(Multipole.CONVERSIONS, FringeQuadEntrance=_int, FringeQuadExit=_int)
+#
+#    def __init__(self, family_name, length, k=0.0, MaxOrder=1, **kwargs):
+#        """Quadrupole(FamName, Length, Strength=0, **keywords)
+#
+#        Available keywords:
+#        'PolynomB'      straight multipoles
+#        'PolynomA'      skew multipoles
+#        'MaxOrder'      Number of desired multipoles
+#        'NumIntSteps'   Number of integration steps (default: 10)
+#        """
+#        poly_b = kwargs.pop('PolynomB', numpy.array([0, k]))
+#        kwargs.setdefault('PassMethod', 'QuadLinearPass')
+#        super(Quadrupole, self).__init__(family_name, length, [], poly_b, MaxOrder=MaxOrder, **kwargs)
+#
+#
+#class Sextupole(Multipole):
+#    """pyAT sextupole element"""
+#    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length']
+#
+#    def __init__(self, family_name, length, h=0.0, MaxOrder=2, **kwargs):
+#        """Sextupole(FamName, Length, Strength=0, **keywords)
+#
+#        Available keywords:
+#        'PolynomB'  straight multipoles
+#        'PolynomA'  skew multipoles
+#        'MaxOrder'  Number of desired multipoles
+#        'NumIntSteps'   Number of integration steps (default: 10)
+#        """
+#        poly_b = kwargs.pop('PolynomB', [0, 0, h])
+#        kwargs.setdefault('PassMethod', 'StrMPoleSymplectic4Pass')
+#        super(Sextupole, self).__init__(family_name, length, [], poly_b, MaxOrder=MaxOrder, **kwargs)
+#
+#
+#class Octupole(Multipole):
+#    """pyAT octupole element, with no changes from multipole at present"""
+#    REQUIRED_ATTRIBUTES = Multipole.REQUIRED_ATTRIBUTES
+#
+#
 class RFCavity(Element):
     """pyAT RF cavity element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length', 'Voltage', 'Frequency', 'HarmNumber', 'Energy']
-    CONVERSIONS = dict(Element.CONVERSIONS, Voltage=_float, Frequency=_float, HarmNumber=_int, Energy=_float,
-                       TimeLag=_float)
-
-    def __init__(self, family_name, length, voltage, frequency, harmonic_number, energy, TimeLag=0.0, **kwargs):
-        """
-        Available keywords:
-        'TimeLag'   time lag with respect to the reference particle
-        """
-        kwargs.setdefault('PassMethod', 'CavityPass')
-        super(RFCavity, self).__init__(family_name, length, Voltage=voltage, Frequency=frequency,
-                                       HarmNumber=harmonic_number, Energy=energy, TimeLag=TimeLag, **kwargs)
-
-
-class RingParam(Element):
-    """pyAT RingParam element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Energy']
-    CONVERSIONS = dict(Element.CONVERSIONS, Energy=_float, Periodicity=_int)
-
-    def __init__(self, family_name, energy, Periodicity=1, **kwargs):
-        kwargs.setdefault('PassMethod', 'IdentityPass')
-        super(RingParam, self).__init__(family_name, Energy=energy, Periodicity=Periodicity, **kwargs)
-
-
-class M66(Element):
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES
-    CONVERSIONS = dict(Element.CONVERSIONS, M66=_array66)
-
-    def __init__(self, family_name, m66=None, **kwargs):
-        if m66 is None:
-            m66 = numpy.identity(6)
-        kwargs.setdefault('PassMethod', 'Matrix66Pass')
-        super(M66, self).__init__(family_name, M66=m66, **kwargs)
-
-
-class Corrector(Element):
-    """pyAT corrector element"""
-    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length', 'KickAngle']
-    CONVERSIONS = dict(Element.CONVERSIONS, KickAngle=_array)
-
-    def __init__(self, family_name, length, kick_angle, **kwargs):
-        kwargs.setdefault('PassMethod', 'CorrectorPass')
-        super(Corrector, self).__init__(family_name, kwargs.pop('Length', 0.0),
-                                        KickAngle=kick_angle, **kwargs)
+    _REQUIRED_ATTRIBUTES = dict(Length=_float, Voltage=_float, Frequency=_float, HarmNumber=_int, Energy=_float)
+    _OPTIONAL_ATTRIBUTES = dict(TimeLag=_float)
+#
+#    def __init__(self, family_name, length, voltage, frequency, harmonic_number, energy, TimeLag=0.0, **kwargs):
+#        """
+#        Available keywords:
+#        'TimeLag'   time lag with respect to the reference particle
+#        """
+#        kwargs.setdefault('PassMethod', 'CavityPass')
+#        super(RFCavity, self).__init__(family_name, length, Voltage=voltage, Frequency=frequency,
+#                                       HarmNumber=harmonic_number, Energy=energy, TimeLag=TimeLag, **kwargs)
+#
+#
+#class RingParam(Element):
+#    """pyAT RingParam element"""
+#    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Energy']
+#    CONVERSIONS = dict(Element.CONVERSIONS, Energy=_float, Periodicity=_int)
+#
+#    def __init__(self, family_name, energy, Periodicity=1, **kwargs):
+#        kwargs.setdefault('PassMethod', 'IdentityPass')
+#        super(RingParam, self).__init__(family_name, Energy=energy, Periodicity=Periodicity, **kwargs)
+#
+#
+#class M66(Element):
+#    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES
+#    CONVERSIONS = dict(Element.CONVERSIONS, M66=_array66)
+#
+#    def __init__(self, family_name, m66=None, **kwargs):
+#        if m66 is None:
+#            m66 = numpy.identity(6)
+#        kwargs.setdefault('PassMethod', 'Matrix66Pass')
+#        super(M66, self).__init__(family_name, M66=m66, **kwargs)
+#
+#
+#class Corrector(Element):
+#    """pyAT corrector element"""
+#    REQUIRED_ATTRIBUTES = Element.REQUIRED_ATTRIBUTES + ['Length', 'KickAngle']
+#    CONVERSIONS = dict(Element.CONVERSIONS, KickAngle=_array)
+#
+#    def __init__(self, family_name, length, kick_angle, **kwargs):
+#        kwargs.setdefault('PassMethod', 'CorrectorPass')
+#        super(Corrector, self).__init__(family_name, kwargs.pop('Length', 0.0),
+#                                        KickAngle=kick_angle, **kwargs)
+#"""
