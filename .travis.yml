@@ -3,6 +3,11 @@ language: python
 
 matrix:
   include:
+    - sudo: required
+      services:
+        - docker
+      env: PIP=pip
+
     - os: linux
       python: "2.7"
     - os: linux
@@ -20,6 +25,9 @@ matrix:
       sudo: required
       language: generic
       env: PYTHON=3
+    - os: osx
+      language: generic
+      env PIP=pip2
 
 install: |
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
@@ -43,4 +51,6 @@ install: |
 
 script:
  - py.test test
+ - $PIP install cibuildwheel==0.10.0
+ - cibuildwheel --outpu-dir wheelhouse
 
