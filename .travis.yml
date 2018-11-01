@@ -52,5 +52,5 @@ install: |
 script:
  - py.test test
  - $PIP install cibuildwheel==0.10.0
- - cibuildwheel --outpu-dir wheelhouse
+ - cibuildwheel --output-dir wheelhouse
 
