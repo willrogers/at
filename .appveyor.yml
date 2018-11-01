@@ -13,11 +13,12 @@ install:
   - pip install pytest
   - cd pyat
   - python setup.py install
+  - pip install cibuildwheel==0.10.0
 
 build_script:
   - py.test test
-  - pip install cibuildwheel==0.10.0
   - cibuildwheel --output-dir wheelhouse
+
 artifacts:
   - path: "wheelhouse\\*.whl"
     name: Wheels

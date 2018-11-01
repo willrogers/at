@@ -27,7 +27,7 @@ matrix:
       env: PYTHON=3
     - os: osx
       language: generic
-      env PIP=pip2
+      env: PIP=pip2
 
 install: |
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
