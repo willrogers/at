@@ -5,6 +5,9 @@ environment:
    - CONDA_DIR: "C:\\Miniconda-x64"
    - CONDA_DIR: "C:\\Miniconda35-x64"
    - CONDA_DIR: "C:\\Miniconda36-x64"
+   - PYTHON: "C:\\Python33-x64"
+     PYTHON_VERSION: "3.3.x"
+     PYTHON_ARCH: "64"
 
 install:
   - set "PATH=%CONDA_DIR%\\Scripts;%PATH%"
