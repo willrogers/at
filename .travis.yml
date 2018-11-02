@@ -6,6 +6,7 @@ matrix:
     - sudo: required
       services:
         - docker
+      python: "3.6"
       env: PIP=pip3
 
     - os: linux
@@ -52,5 +53,8 @@ install: |
 script:
  - py.test test
  - $PIP install cibuildwheel==0.10.0
+ - $PIP wheel -r requirements.txt
+ - $PIP wheel -r requirements.txt -w /Users/travis/T-Nicholls/at/pyat/wheelhouse
+ - $PIP wheel /Users/travis/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
  - cibuildwheel --output-dir wheelhouse
 
