@@ -52,8 +52,7 @@ install: |
 
 script:
  - py.test test
- - python -m pip install pip==18.1
- - python -m pip --version
+ - ls ~/
  - python -m pip install cibuildwheel
  - python -m pip install --upgrade cibuildwheel
  - python -m pip wheel -r requirements.txt
