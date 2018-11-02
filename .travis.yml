@@ -52,9 +52,9 @@ install: |
 
 script:
  - py.test test
- - $PIP install --upgrade cibuildwheel
- - $PIP wheel -r requirements.txt
- - $PIP wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse
- - $PIP wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
+ - $pip3 install --upgrade cibuildwheel
+ - $pip3 wheel -r requirements.txt
+ - $pip3 wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse
+ - $pip3 wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
  - cibuildwheel --output-dir wheelhouse
 

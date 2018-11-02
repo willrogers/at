@@ -2,25 +2,21 @@
 # See https://www.appveyor.com/docs/build-environment/
 environment:
   matrix:
-   - CONDA_DIR: "C:\\Miniconda-x64"
-   - CONDA_DIR: "C:\\Miniconda35-x64"
-   - CONDA_DIR: "C:\\Miniconda36-x64"
    - PYTHON: "C:\\Python33-x64"
      PYTHON_VERSION: "3.3.x"
      PYTHON_ARCH: "64"
 
 install:
-  - set "PATH=%CONDA_DIR%\\Scripts;%PATH%"
-  - conda create -y --name conda-env pip numpy scipy
-  - activate conda-env
-  - pip install pytest
-  - cd pyat
+  - virtualenv --no-site-packages wenv
+  - source wenv/bin/activate
+  - pip install -r requirements.txt
   - python setup.py install
-  - cmd python -m pip install --upgrade cibuildwheel
+  - pip install wheel
+  - python -m pip install --upgrade cibuildwheel
 
 build_script:
   - py.test test
-  - cmd python -m cibuildwheel --output-dir wheelhouse
+  - python -m cibuildwheel --output-dir wheelhouse
 
 artifacts:
   - path: "wheelhouse\\*.whl"
