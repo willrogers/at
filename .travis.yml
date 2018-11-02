@@ -54,7 +54,7 @@ script:
  - py.test test
  - $PIP install cibuildwheel==0.10.0
  - $PIP wheel -r requirements.txt
- - $PIP wheel -r requirements.txt -w /Users/travis/T-Nicholls/at/pyat/wheelhouse
- - $PIP wheel /Users/travis/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
+ - $PIP wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse
+ - $PIP wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
  - cibuildwheel --output-dir wheelhouse
 
