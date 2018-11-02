@@ -52,7 +52,7 @@ install: |
 
 script:
  - py.test test
- - $PIP install cibuildwheel==0.10.0
+ - $PIP install --upgrade cibuildwheel
  - $PIP wheel -r requirements.txt
  - $PIP wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse
  - $PIP wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
