@@ -52,9 +52,11 @@ install: |
 
 script:
  - py.test test
+ - python -m pip install --upgrade pip
+ - python -m pip install cibuildwheel
  - python -m pip install --upgrade cibuildwheel
- - python -m wheel -r requirements.txt
- - python -m wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse
- - python -m wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
+ - python -m pip wheel -r requirements.txt
+ - python -m pip wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse
+ - python -m pip wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
  - python -m cibuildwheel --output-dir wheelhouse
 
