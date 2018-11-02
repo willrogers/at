@@ -7,7 +7,7 @@ matrix:
       services:
         - docker
       python: "3.6"
-      env: PIP=pip3
+      env: PIP=pip
 
     - os: linux
       python: "2.7"
@@ -28,7 +28,7 @@ matrix:
       env: PYTHON=3
     - os: osx
       language: generic
-      env: PIP=pip3
+      env: PIP=pip2
 
 install: |
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
@@ -52,9 +52,9 @@ install: |
 
 script:
  - py.test test
- - $pip3 install --upgrade cibuildwheel
- - $pip3 wheel -r requirements.txt
- - $pip3 wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse
- - $pip3 wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
- - cibuildwheel --output-dir wheelhouse
+ - python -m pip install --upgrade cibuildwheel
+ - python -m wheel -r requirements.txt
+ - python -m wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse
+ - python -m wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
+ - python -m cibuildwheel --output-dir wheelhouse
 
