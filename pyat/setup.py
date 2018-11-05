@@ -14,10 +14,10 @@ import shutil
 here = os.path.abspath(os.path.dirname(__file__))
 macros = [('PYAT', None)]
 
-integrator_src_orig = os.path.abspath(here+'/../atintegrators')
-integrator_src = './integrator-src'
-at_source = os.path.abspath(here+'/at.c')
-diffmatrix_source = os.path.abspath(here+'/../atmat/atphysics/Radiation/findmpoleraddiffmatrix.c')
+integrator_src_orig = os.path.abspath(os.path.join(here, '../atintegrators'))
+integrator_src = os.path.abspath(os.path.join(here, './integrator-src'))
+at_source = os.path.abspath(os.path.join(here,'at.c'))
+diffmatrix_source = os.path.abspath(os.path.join(here, '../atmat/atphysics/Radiation/findmpoleraddiffmatrix.c'))
 
 # Copy files into pyat for distribution.
 source_files = glob.glob(os.path.join(integrator_src_orig, '*.[ch]'))
@@ -52,7 +52,7 @@ at = Extension('at.tracking.atpass',
                extra_compile_args=cflags)
 
 diffmatrix = Extension(name='at.physics.diffmatrix',
-                       sources=[integrator_src+'/findmpoleraddiffmatrix.c'],
+                       sources=[diffmatrix_source],
                        include_dirs=[numpy.get_include(), integrator_src_orig],
                        define_macros=macros,
                        extra_compile_args=cflags)

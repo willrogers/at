@@ -62,4 +62,5 @@ script:
  - python -m pip wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
  - python -m pip wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
  - python -m cibuildwheel --output-dir wheelhouse
+ - python setup.py bdist_wheel
 
