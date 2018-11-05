@@ -65,4 +65,5 @@ setup(name='at-python',
       install_requires=['numpy>=1.10'],
       packages=find_packages(),
       ext_modules=[at, diffmatrix] + [integrator_extension(pm) for pm in pass_methods],
-      zip_safe=False)
+      zip_safe=False,
+      python_requires='>=2.7.4')

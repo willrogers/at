@@ -3,12 +3,6 @@ language: python
 
 matrix:
   include:
-    - sudo: required
-      services:
-        - docker
-      python: "3.6"
-      env: PIP=pip
-
     - os: linux
       python: "2.7"
     - os: linux
@@ -26,9 +20,6 @@ matrix:
       sudo: required
       language: generic
       env: PYTHON=3
-    - os: osx
-      language: generic
-      env: PIP=pip2
 
 install: |
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
@@ -52,15 +43,4 @@ install: |
 
 script:
  - py.test test
- - python -m pip install cibuildwheel
- - python -m pip install --upgrade cibuildwheel
- - python -m pip wheel -r requirements.txt
- - python -m pip wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse
- - python -m pip wheel -r requirements.txt -w ~/build/T-Nicholls/at/pyat/wheelhouse
- - python -m pip wheel -r requirements.txt -w /home/travis/build/T-Nicholls/at/pyat/wheelhouse --no-deps
- - python -m pip wheel -r /home/travis/build/T-Nicholls/at/pyat/requirements.txt -w /tmp/built_wheel --no-deps
- - python -m pip wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
- - python -m pip wheel /home/travis/build/T-Nicholls/at/pyat -w /tmp/built_wheel --no-deps
- - python -m cibuildwheel --output-dir wheelhouse
  - python setup.py bdist_wheel
-
