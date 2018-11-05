@@ -15,6 +15,8 @@ macros = [('PYAT', None)]
 
 integrator_src_orig = os.path.abspath('../atintegrators')
 integrator_src = './integrator-src'
+at_source = os.path.abspath('./at.c')
+diffmatrix_source = os.path.abspath('../atmat/atphysics/Radiation/findmpoleraddiffmatrix.c')
 
 # Copy files into pyat for distribution.
 source_files = glob.glob(os.path.join(integrator_src_orig, '*.[ch]'))
@@ -42,13 +44,13 @@ def integrator_extension(pass_method):
 
 
 at = Extension('at.tracking.atpass',
-               sources=['at.c'],
+               sources=[at_source],
                define_macros=macros,
                include_dirs=[numpy.get_include(), integrator_src_orig],
                extra_compile_args=cflags)
 
 diffmatrix = Extension(name='at.physics.diffmatrix',
-                       sources=['../atmat/atphysics/Radiation/findmpoleraddiffmatrix.c'],
+                       sources=[diffmatrix_source],
                        include_dirs=[numpy.get_include(), integrator_src_orig],
                        define_macros=macros,
                        extra_compile_args=cflags)
