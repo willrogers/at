@@ -21,6 +21,7 @@ diffmatrix_source = os.path.abspath(here+'/../atmat/atphysics/Radiation/findmpol
 
 # Copy files into pyat for distribution.
 source_files = glob.glob(os.path.join(integrator_src_orig, '*.[ch]'))
+source_files.append(diffmatrix_source)
 if not os.path.exists(integrator_src):
     os.makedirs(integrator_src)
 for f in source_files:
@@ -51,7 +52,7 @@ at = Extension('at.tracking.atpass',
                extra_compile_args=cflags)
 
 diffmatrix = Extension(name='at.physics.diffmatrix',
-                       sources=[diffmatrix_source],
+                       sources=[integrator_src+'/findmpoleraddiffmatrix.c'],
                        include_dirs=[numpy.get_include(), integrator_src_orig],
                        define_macros=macros,
                        extra_compile_args=cflags)
