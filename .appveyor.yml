@@ -8,7 +8,7 @@ environment:
 
 install:
   - virtualenv --no-site-packages wenv
-  - source wenv/bin/activate
+  - cmd source wenv/bin/activate
   - pip install -r requirements.txt
   - python setup.py install
   - pip install wheel
