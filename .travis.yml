@@ -53,7 +53,7 @@ script:
  - python -m pip wheel . -w /tmp/built_wheel --no-deps
  - |
    if [[ $BUILD_WHEEL == 1 ]]; then
-     pip3 install --upgrade cibuildwheel;
+     python -m pip install --upgrade cibuildwheel;
      export CIBW_BUILD_VERBOSITY='3';
      export CIBW_BEFORE_BUILD='pip install numpy';
      cibuildwheel --output-dir wheelhouse;
