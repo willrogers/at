@@ -6,7 +6,7 @@ matrix:
     - sudo: required
       services:
         - docker
-      env: BUILD_WHEEL="1"
+      env: BUILD_WHEEL=1
     - os: linux
       python: "2.7"
     - os: linux
@@ -26,7 +26,7 @@ matrix:
       env: PYTHON=3
     - os: osx
       language: generic
-      env: BUILD_WHEEL="1"
+      env: BUILD_WHEEL=1
 
 install: |
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
