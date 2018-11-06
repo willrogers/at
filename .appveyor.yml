@@ -1,7 +1,9 @@
 # This file configures Appveyor to run builds on Windows machines for each pull request.
 # See https://www.appveyor.com/docs/build-environment/
 environment:
-  CIBW_BUILD_VERBOSITY: 3
+  global:
+    CIBW_BUILD_VERBOSITY: 3
+    CIBW_BEFORE_BUILD: 'pip install numpy'
   matrix:
    - CONDA_DIR: "C:\\Miniconda-x64"
    - CONDA_DIR: "C:\\Miniconda35-x64"
