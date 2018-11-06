@@ -46,4 +46,5 @@ script:
  - python setup.py bdist_wheel
  - python -m pip wheel . -w /tmp/built_wheel --no-deps
  - python -m pip install --upgrade cibuildwheel
+ - export CIBW_BUILD_VERBOSITY='3'
  - cibuildwheel --output-dir wheelhouse
