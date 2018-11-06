@@ -17,6 +17,7 @@ install:
 build_script:
   - py.test test
   - python setup.py bdist_wheel
+  - python -m pip wheel C:\projects\at\pyat - C:\Users\appveyor\AppData\Local\Temp\1\built_wheel --no-deps
   - python -m pip install --upgrade cibuildwheel
   - cibuildwheel --output-dir wheelhouse
 
