@@ -14,20 +14,21 @@ import shutil
 here = os.path.abspath(os.path.dirname(__file__))
 macros = [('PYAT', None)]
 
+# This is a hack it's terrible.
 integrator_src_orig = os.path.abspath(os.path.join(here, '../atintegrators'))
-integrator_src = os.path.abspath(os.path.join(here, './integrator-src'))
+integrator_src = os.path.abspath(os.path.join(here, 'integrator-src'))
 at_source = os.path.abspath(os.path.join(here,'at.c'))
-diffmatrix_source = os.path.abspath(os.path.join(here, '../atmat/atphysics/Radiation/findmpoleraddiffmatrix.c'))
-
+diffmatrix_source = os.path.abspath(os.path.join(here, '../atmat/atphysics/Radiation'))
 # Copy files into pyat for distribution.
 source_files = glob.glob(os.path.join(integrator_src_orig, '*.[ch]'))
-source_files.append(diffmatrix_source)
+source_files.extend(glob.glob(os.path.join(diffmatrix_source, 'findmpoleraddiffmatrix.c')))
 if not os.path.exists(integrator_src):
     os.makedirs(integrator_src)
 for f in source_files:
     shutil.copy2(f, integrator_src)
-
 pass_methods = glob.glob(os.path.join(integrator_src, '*Pass.c'))
+diffmatrix_method = os.path.join(integrator_src, 'findmpoleraddiffmatrix.c')
+# Hacky stuff ends here.
 
 cflags = []
 
@@ -40,7 +41,7 @@ def integrator_extension(pass_method):
     name = ".".join(('at', 'integrators', name))
     return Extension(name=name,
                      sources=[pass_method],
-                     include_dirs=[numpy.get_include(), integrator_src_orig],
+                     include_dirs=[numpy.get_include(), integrator_src_orig, diffmatrix_source],
                      define_macros=macros,
                      extra_compile_args=cflags)
 
@@ -48,12 +49,12 @@ def integrator_extension(pass_method):
 at = Extension('at.tracking.atpass',
                sources=[at_source],
                define_macros=macros,
-               include_dirs=[numpy.get_include(), integrator_src_orig],
+               include_dirs=[numpy.get_include(), integrator_src_orig, diffmatrix_source],
                extra_compile_args=cflags)
 
 diffmatrix = Extension(name='at.physics.diffmatrix',
-                       sources=[diffmatrix_source],
-                       include_dirs=[numpy.get_include(), integrator_src_orig],
+                       sources=[diffmatrix_method],
+                       include_dirs=[numpy.get_include(), integrator_src_orig, diffmatrix_source],
                        define_macros=macros,
                        extra_compile_args=cflags)
 

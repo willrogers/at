@@ -15,5 +15,11 @@ install:
   - python setup.py install
 
 build_script:
-- py.test test
-- python setup.py bdist_wheel
+  - py.test test
+  - python setup.py bdist_wheel
+  - python -m pip install --upgrade cibuildwheel
+  - cibuildwheel --output-dir wheelhouse
+
+artifacts:
+  - path: "wheelhouse\\*.whl"
+    name: Wheels
