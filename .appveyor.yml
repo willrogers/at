@@ -1,6 +1,7 @@
 # This file configures Appveyor to run builds on Windows machines for each pull request.
 # See https://www.appveyor.com/docs/build-environment/
 environment:
+  CIBW_BUILD_VERBOSITY: 3
   matrix:
    - CONDA_DIR: "C:\\Miniconda-x64"
    - CONDA_DIR: "C:\\Miniconda35-x64"
@@ -18,7 +19,6 @@ build_script:
   - py.test test
   - python setup.py bdist_wheel
   - python -m pip wheel C:\projects\at\pyat -w C:\Users\appveyor\AppData\Local\Temp\1\built_wheel --no-deps
-  - export CIBW_BUILD_VERBOSITY='3'
   - python -m pip install --upgrade cibuildwheel
   - cibuildwheel --output-dir wheelhouse
 
