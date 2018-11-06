@@ -6,7 +6,7 @@ matrix:
     - sudo: required
       services:
         - docker
-      env: BUILD_WHEEL=1
+      env: BUILD_WHEEL="1"
     - os: linux
       python: "2.7"
     - os: linux
@@ -26,7 +26,7 @@ matrix:
       env: PYTHON=3
     - os: osx
       language: generic
-      env: BUILD_WHEEL=1
+      env: BUILD_WHEEL="1"
 
 install: |
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
@@ -52,7 +52,7 @@ script:
  - python setup.py bdist_wheel
  - python -m pip wheel . -w /tmp/built_wheel --no-deps
  - |
-   if ["${BUILD_WHEEL:-}" != ""]; then
+   if ["${BUILD_WHEEL:-}" == "1"]; then
      pip3 install --upgrade cibuildwheel
      export CIBW_BUILD_VERBOSITY='3'
      export CIBW_BEFORE_BUILD='pip install numpy'
