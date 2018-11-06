@@ -6,6 +6,7 @@ except ImportError:
           'Please install numpy: "pip install numpy"\n')
     sys.exit()
 from setuptools import setup, Extension, find_packages
+from setuptools.command.build_ext import build_ext
 import os
 import glob
 import shutil
@@ -14,21 +15,32 @@ import shutil
 here = os.path.abspath(os.path.dirname(__file__))
 macros = [('PYAT', None)]
 
-# This is a hack it's terrible.
+
+class CopyDuringBuild(build_ext):
+    """Only copy integrators and diffmatrix during build. This avoids filepath
+    issues during wheel building where a temporary copy of pyAT is made.
+    """
+    def run(self):
+        here = os.path.abspath(os.path.dirname(__file__))
+        integrator_src_orig = os.path.abspath(os.path.join(here, '../atintegrators'))
+        integrator_src = os.path.abspath(os.path.join(here, 'integrator-src'))
+        diffmatrix_source = os.path.abspath(os.path.join(here, '../atmat/atphysics/Radiation'))
+        # Copy files into pyat for distribution.
+        source_files = glob.glob(os.path.join(integrator_src_orig, '*.[ch]'))
+        source_files.extend(glob.glob(os.path.join(diffmatrix_source, 'findmpoleraddiffmatrix.c')))
+        if not os.path.exists(integrator_src):
+            os.makedirs(integrator_src)
+        for f in source_files:
+            shutil.copy2(f, integrator_src)
+        build_ext.run(self)
+
+
+at_source = os.path.abspath(os.path.join(here,'at.c'))
 integrator_src_orig = os.path.abspath(os.path.join(here, '../atintegrators'))
 integrator_src = os.path.abspath(os.path.join(here, 'integrator-src'))
-at_source = os.path.abspath(os.path.join(here,'at.c'))
 diffmatrix_source = os.path.abspath(os.path.join(here, '../atmat/atphysics/Radiation'))
-# Copy files into pyat for distribution.
-source_files = glob.glob(os.path.join(integrator_src_orig, '*.[ch]'))
-source_files.extend(glob.glob(os.path.join(diffmatrix_source, 'findmpoleraddiffmatrix.c')))
-if not os.path.exists(integrator_src):
-    os.makedirs(integrator_src)
-for f in source_files:
-    shutil.copy2(f, integrator_src)
 pass_methods = glob.glob(os.path.join(integrator_src, '*Pass.c'))
 diffmatrix_method = os.path.join(integrator_src, 'findmpoleraddiffmatrix.c')
-# Hacky stuff ends here.
 
 cflags = []
 
@@ -58,7 +70,8 @@ diffmatrix = Extension(name='at.physics.diffmatrix',
                        define_macros=macros,
                        extra_compile_args=cflags)
 
-setup(name='at-python',
+setup(cmdclass={'build_ext': CopyDuringBuild},
+      name='at-python',
       version='0.0.1',
       description='Accelerator Toolbox',
       author='The AT collaboration',

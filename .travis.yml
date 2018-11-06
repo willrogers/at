@@ -49,8 +49,6 @@ install: |
   fi
 
 script:
- - python setup.py bdist_wheel
- - python -m pip wheel . -w /tmp/built_wheel --no-deps
  - |
    if [[ $BUILD_WHEEL == 1 ]]; then
      python -m pip install --upgrade cibuildwheel;
