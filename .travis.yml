@@ -46,6 +46,7 @@ install: |
     cd pyat
     pip install --upgrade pip setuptools wheel
     pip install --only-binary=numpy,scipy -r requirements.txt
+    python setup.py build
     #python setup.py install
   fi
 
@@ -53,6 +54,7 @@ script:
  - |
    if [[ $BUILD_WHEEL == 1 ]]; then
      python -m pip install git+https://github.com/willrogers/cibuildwheel;
+     rm -rf build dist
      export CIBW_BUILD_VERBOSITY='3';
      export CIBW_BEFORE_BUILD='pip install numpy';
      #export CIBW_MANYLINUX1_X86_64_IMAGE=dockcross/manylinux-x64;
