@@ -54,7 +54,8 @@ script:
      python -m pip install git+https://github.com/willrogers/cibuildwheel;
      export CIBW_BUILD_VERBOSITY='3';
      export CIBW_BEFORE_BUILD='pip install numpy';
-     export CIBW_MANYLINUX1_X86_64_IMAGE=a13b2719fb21daebfe25c0173d80f8a85a2326dd994510d7879676e7a2193500;
+     export CIBW_MANYLINUX1_X86_64_IMAGE=dockcross/manylinux-x64;
+     export CIBW_MANYLINUX1_I686_IMAGE=dockcross/manylinux-x86;
      cibuildwheel --output-dir wheelhouse;
    else
      python -m setup.py install
