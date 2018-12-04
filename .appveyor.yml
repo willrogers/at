@@ -1,4 +1,5 @@
-# This file configures Appveyor to run builds on Windows machines for each pull request.
+# This file configures Appveyor to run builds on Windows machines for each 
+# pull request.
 # See https://www.appveyor.com/docs/build-environment/
 environment:
   global:
