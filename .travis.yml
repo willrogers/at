@@ -12,5 +12,6 @@ matrix:
       env: PIP=pip2
 
 script:
+  - cd pyat
   - $PIP install cibuildwheel==0.10.0
   - cibuildwheel --output-dir wheelhouse
