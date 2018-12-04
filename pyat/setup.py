@@ -22,6 +22,7 @@ class CopyDuringBuild(build_ext):
     """
     def run(self):
         here = os.path.abspath(os.path.dirname(__file__))
+        print('CopyDuringBuild.run() in {}'.format(here))
         integrator_src_orig = os.path.abspath(os.path.join(here, '../atintegrators'))
         integrator_src = os.path.abspath(os.path.join(here, 'integrator-src'))
         diffmatrix_source = os.path.abspath(os.path.join(here, '../atmat/atphysics/Radiation'))
