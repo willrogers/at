@@ -40,12 +40,12 @@ install: |
     cd pyat
     pip$PYTHON install --upgrade pip setuptools wheel
     pip$PYTHON install --only-binary=numpy,scipy -r requirements.txt
-    python$PYTHON setup.py install
+    #python$PYTHON setup.py install
   else
     cd pyat
     pip install --upgrade pip setuptools wheel
     pip install --only-binary=numpy,scipy -r requirements.txt
-    python setup.py install
+    #python setup.py install
   fi
 
 script:
