@@ -55,7 +55,7 @@ def integrator_extension(pass_method):
     name = ".".join(('at', 'integrators', name))
     return Extension(name=name,
                      sources=[pass_method],
-                     include_dirs=[numpy.get_include(), integrator_src_orig, diffmatrix_source],
+                     include_dirs=[numpy.get_include(), integrator_src, diffmatrix_source],
                      define_macros=macros,
                      extra_compile_args=cflags)
 
@@ -63,12 +63,12 @@ def integrator_extension(pass_method):
 at = Extension('at.tracking.atpass',
                sources=[at_source],
                define_macros=macros,
-               include_dirs=[numpy.get_include(), integrator_src_orig, diffmatrix_source],
+               include_dirs=[numpy.get_include(), integrator_src, diffmatrix_source],
                extra_compile_args=cflags)
 
 diffmatrix = Extension(name='at.physics.diffmatrix',
                        sources=[diffmatrix_method],
-                       include_dirs=[numpy.get_include(), integrator_src_orig, diffmatrix_source],
+                       include_dirs=[numpy.get_include(), integrator_src, diffmatrix_source],
                        define_macros=macros,
                        extra_compile_args=cflags)
 
