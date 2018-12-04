@@ -13,5 +13,7 @@ matrix:
 
 script:
   - cd pyat
+  - export CIBW_BUILD_VERBOSITY='3';
+  - export CIBW_BEFORE_BUILD='pip install numpy';
   - $PIP install cibuildwheel==0.10.0
   - cibuildwheel --output-dir wheelhouse
