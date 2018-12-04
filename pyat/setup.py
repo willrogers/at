@@ -33,6 +33,7 @@ class CopyDuringBuild(build_ext):
             os.makedirs(integrator_src)
         for f in source_files:
             shutil.copy2(f, integrator_src)
+        print(os.listdir(integrator_src))
         build_ext.run(self)
 
 
