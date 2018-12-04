@@ -51,14 +51,14 @@ install: |
 script:
  - |
    if [[ $BUILD_WHEEL == 1 ]]; then
-     python -m pip install git+https://github.com/willrogers/cibuildwheel;
+     python -m pip install --upgrade cibuildwheel
      # Ensure that existing build artefacts aren't carried over into
      # cibuildwheel run.
      rm -rf build dist
-     export CIBW_BUILD_VERBOSITY='3';
-     export CIBW_BEFORE_BUILD='pip install numpy';
-     cibuildwheel --output-dir wheelhouse;
+     export CIBW_BUILD_VERBOSITY='3'
+     export CIBW_BEFORE_BUILD='pip install numpy'
+     cibuildwheel --output-dir wheelhouse
    else
      python -m setup.py install
-     py.test test;
+     py.test test
    fi
