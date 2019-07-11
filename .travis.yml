@@ -51,8 +51,6 @@ script: |
     rm -rf build
     python -m pip install --upgrade cibuildwheel
     cibuildwheel --output-dir wheelhouse
-    python -m pip install twine
-    python -m twine upload --repository-url https://test.pypi.org/legacy/ wheelhouse/*.whl
   else
     python -m pip install pytest-cov
     python -m pytest test --cov-report term-missing --cov=at
