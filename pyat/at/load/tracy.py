@@ -30,9 +30,9 @@ def create_element(cls, name, params, energy):
     elif cls == Dipole:
         length = params.pop('l')
         params['PassMethod'] = 'BndMPoleSymplectic4Pass'
-        params['BendingAngle'] = float(params.pop('t')) / 360 * numpy.pi
-        params['EntranceAngle'] = float(params.pop('t1')) / 360 * numpy.pi
-        params['ExitAngle'] = float(params.pop('t2')) / 360 * numpy.pi
+        params['BendingAngle'] = (float(params.pop('t')) / 180) * numpy.pi
+        params['EntranceAngle'] = (float(params.pop('t1')) / 180) * numpy.pi
+        params['ExitAngle'] = (float(params.pop('t2')) / 180) * numpy.pi
         return cls(name, length, **params)
     elif cls == Quadrupole:
         length = params.pop('l')
@@ -83,8 +83,17 @@ def parse_chunk(value, elements, chunks):
         if 'symmetry' in part:
             continue
         if 'inv' in part:
-            inverted_chunk = re.match('inv\((.*)\)', part).groups()[0]
-            chunk.extend(reversed(chunks[inverted_chunk]))
+            chunk_to_invert = re.match('inv\((.*)\)', part).groups()[0]
+            inverted_chunk = []
+            for el in reversed(chunks[chunk_to_invert]):
+                if el.__class__ == Dipole:
+                    inverted_dipole = el.copy()
+                    inverted_dipole.EntranceAngle = el.ExitAngle
+                    inverted_dipole.ExitAngle = el.EntranceAngle
+                    inverted_chunk.append(inverted_dipole)
+                else:
+                    inverted_chunk.append(el)
+            chunk.extend(inverted_chunk)
         elif '*' in part:
             num, chunk_name = part.split('*')
             chunk.extend(int(num) * chunks[chunk_name])
