@@ -1,9 +1,20 @@
+import pytest
+
 from at.load.tracy import (
-    expand_tracy, parse_lines, tracy_element_from_string
+    expand_tracy, parse_lines, tracy_element_from_string, split_ignoring_parentheses
 )
 from at.lattice.elements import (
-    Drift, Dipole, Marker, Quadrupole, RFCavity, Sextupole
+    Dipole, Drift, Marker, Multipole, Quadrupole, RFCavity, Sextupole
 )
+
+
+@pytest.mark.parametrize('string,delimiter,target', [
+    ['a,b', ',', ['a', 'b']],
+    ['a,b(c,d)', ',', ['a', 'b(c,d)']],
+    ['l=0,hom(4,0.0,0)', ',', ['l=0', 'hom(4,0.0,0)']],
+])
+def test_split_ignoring_parentheses(string, delimiter, target):
+    assert split_ignoring_parentheses(string, delimiter) == target
 
 
 def test_parse_lines_removes_comments():
@@ -44,10 +55,16 @@ def test_tracy_element_from_string_handles_quadrupole():
 
 
 def test_tracy_element_from_string_handles_sextupole():
-    quad = 'sextupole,l=0.14,k=174.4,n=nsext,method=4'
+    sext = 'sextupole,l=0.14,k=174.4,n=nsext,method=4'
     variables = {'nsext': 2}
     expected = Sextupole('s1', 0.14, h=174.4, NumIntSteps=2, method='4')
-    assert tracy_element_from_string('s1', quad, variables) == expected
+    assert tracy_element_from_string('s1', sext, variables) == expected
+
+
+def test_tracy_element_from_string_handles_hom():
+    oct = 'multipole,l=0.0,hom=(4,1.0,0.3)'
+    expected = Multipole('m1', 0.0, poly_a=[0, 0, 0, 1], poly_b=[0, 0, 0, 0.3])
+    assert tracy_element_from_string('m1', oct, {}) == expected
 
 
 def test_tracy_element_from_string_handles_cavity():

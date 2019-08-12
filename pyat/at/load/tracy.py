@@ -1,3 +1,4 @@
+import collections
 from os.path import abspath
 import re
 import numpy
@@ -22,6 +23,28 @@ ELEMENT_MAP = {
 }
 
 
+def split_ignoring_parentheses(string, delimiter):
+    PLACEHOLDER = 'placeholder'
+    substituted = string[:]
+    matches = collections.deque(re.finditer('\(.*?\)', string))
+    for match in matches:
+        substituted = '{}{}{}'.format(
+            substituted[:match.start()],
+            PLACEHOLDER,
+            substituted[match.end():]
+        )
+    parts = substituted.split(delimiter)
+    replaced_parts = []
+    for part in parts:
+        if PLACEHOLDER in part:
+            next_match = matches.popleft()
+            part = part.replace(PLACEHOLDER, next_match.group())
+        replaced_parts.append(part)
+    assert not matches
+
+    return replaced_parts
+
+
 def create_element(cls, name, params, energy):
     if 'n' in params:
         params['NumIntSteps'] = params.pop('n')
@@ -37,11 +60,6 @@ def create_element(cls, name, params, energy):
     elif cls == Quadrupole:
         length = params.pop('l')
         params['PassMethod'] = 'StrMPoleSymplectic4Pass'
-        return cls(name, length, **params)
-
-    elif cls == Sextupole:
-        params['h'] = params.pop('k')
-        length = params.pop('l', 0)
         return cls(name, length, **params)
     elif cls == RFCavity:
         length = params.pop('l')
@@ -82,7 +100,7 @@ def parse_lines(contents):
 
 def parse_chunk(value, elements, chunks):
     chunk = []
-    parts = value.split(',')
+    parts = split_ignoring_parentheses(value, ',')
     for part in parts:
         if 'symmetry' in part:
             continue
@@ -134,17 +152,30 @@ def expand_tracy(contents):
 
 
 def tracy_element_from_string(name, element_string, variables):
-    parts = element_string.split(',')
+    parts = split_ignoring_parentheses(element_string, ',')
     params = {}
     element_type = parts[0]
     if element_type == 'corrector':
         parts = parts[:1]
         params['kick_angle'] = 0
     for part in parts[1:]:
-        key, value = part.split('=')
+        key, value = split_ignoring_parentheses(part, '=')
         if value in variables:
             value = variables[value]
-        params[key] = value
+        if key == 'hom':
+            assert value[0] == '('
+            assert value[-1] == ')'
+            order, a, b = value[1:-1].split(',')
+            polynom_a = [0] * int(order)
+            polynom_b = [0] * int(order)
+            polynom_a[int(order)-1] = float(a)
+            polynom_b[int(order)-1] = float(b)
+            params['PolynomA'] = polynom_a
+            params['PolynomB'] = polynom_b
+        else:
+            params[key] = value
+    if element_type == 'sextupole':
+        params['h'] = float(params.pop('k', 0))
 
     try:
         energy = float(variables['energy'])
