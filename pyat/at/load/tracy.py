@@ -61,8 +61,12 @@ def create_element(cls, name, params, energy):
         return cls(name, length, **params)
 
 
-def extract_raw(contents):
-    """Remove comments and whitespace and convert to lowercase."""
+def parse_lines(contents):
+    """Return individual lines.
+
+    Remove comments and whitespace, convert to lowercase, and split on
+    semicolons.
+    """
     # Nested comments not handled.
     in_comment = False
     stripped_contents = ''
@@ -73,7 +77,7 @@ def extract_raw(contents):
             in_comment = False
         elif not in_comment and not char.isspace():
             stripped_contents += char
-    return stripped_contents
+    return stripped_contents.split(';')
 
 
 def parse_chunk(value, elements, chunks):
@@ -107,8 +111,7 @@ def parse_chunk(value, elements, chunks):
 
 
 def expand_tracy(contents):
-    stripped_contents = extract_raw(contents)
-    lines = stripped_contents.split(';')
+    lines = parse_lines(contents)
     assert lines[0] == 'definelattice'
     assert lines[-2] == 'end'
     assert lines[-1] == ''
@@ -143,7 +146,10 @@ def tracy_element_from_string(name, element_string, variables):
             value = variables[value]
         params[key] = value
 
-    energy = float(variables['energy'])
+    try:
+        energy = float(variables['energy'])
+    except KeyError:
+        energy = None
 
     return create_element(ELEMENT_MAP[element_type], name, params, energy)
 

@@ -1,17 +1,21 @@
 from at.load.tracy import (
-    expand_tracy, strip_comments, tracy_element_from_string
+    expand_tracy, parse_lines, tracy_element_from_string
 )
 from at.lattice.elements import (
     Drift, Dipole, Marker, Quadrupole, RFCavity, Sextupole
 )
 
 
-def test_strip_comments_removes_comments():
-    assert strip_comments('a{}b') == 'ab'
+def test_parse_lines_removes_comments():
+    assert parse_lines('a{}b') == ['ab']
 
 
-def test_strip_comments_removes_whitespace():
-    assert strip_comments('a\n{a\nb}b') == 'ab'
+def test_parse_lines_removes_whitespace():
+    assert parse_lines('a\n{a\nb}b') == ['ab']
+
+
+def test_parse_line_splits_on_semicolons():
+    assert parse_lines('a;b') == ['a', 'b']
 
 
 def test_tracy_element_from_string_handles_drift():
@@ -28,21 +32,28 @@ def test_tracy_element_from_string_handles_marker():
 def test_tracy_element_from_string_handles_quadrupole():
     quad = 'quadrupole,l=0.15,k=10.24,n=nquad,method=4'
     variables = {'nquad': 10}
-    expected = Quadrupole('q1', 0.15, k=10.24, n=10, method='4')
+    expected = Quadrupole(
+        'q1',
+        0.15,
+        k=10.24,
+        NumIntSteps=10,
+        method='4',
+        PassMethod='StrMPoleSymplectic4Pass'
+    )
     assert tracy_element_from_string('q1', quad, variables) == expected
 
 
 def test_tracy_element_from_string_handles_sextupole():
     quad = 'sextupole,l=0.14,k=174.4,n=nsext,method=4'
     variables = {'nsext': 2}
-    expected = Sextupole('s1', 0.14, h=174.4, n=2, method='4')
+    expected = Sextupole('s1', 0.14, h=174.4, NumIntSteps=2, method='4')
     assert tracy_element_from_string('s1', quad, variables) == expected
 
 
 def test_tracy_element_from_string_handles_cavity():
     cavity = 'cavity,l=0.0,frequency=499.654e6,voltage=2.2e6,phi=0.0'
-    expected = RFCavity('c1', 0.0, 2.2e6, 4.99654e8, 31, 3e9, phi='0.0')
-    constructed = tracy_element_from_string('c1', cavity, {})
+    expected = RFCavity('c1', 0.0, 2.2e6, 4.99654e8, 31, 3.5e9, phi='0.0')
+    constructed = tracy_element_from_string('c1', cavity, {'energy': 3.5})
     assert constructed == expected
 
 
@@ -52,12 +63,13 @@ def test_tracy_element_from_string_handles_bending():
     expected = Dipole(
         'b1',
         0.2,
-        BendingAngle=0.32969999,
+        BendingAngle=0.00575435036929238,
         EntranceAngle=0,
-        ExitAngle=0.32969999,
+        ExitAngle=0.00575435036929238,
         k=-0.12411107,
-        n=2,
-        method='4'
+        NumIntSteps=2,
+        method='4',
+        PassMethod='BndMPoleSymplectic4Pass'
     )
     assert tracy_element_from_string('b1', bend, variables) == expected
 
@@ -71,7 +83,8 @@ def test_tracy_element_from_string_handles_variable():
 
 
 def test_expand_tracy():
-    contents = "define lattice;dmult:drift,l=1;cell:dmult;end"
-    elements = expand_tracy(contents)
+    contents = "define lattice;energy=1;dmult:drift,l=1;cell:dmult;end;"
+    elements, energy = expand_tracy(contents)
     assert len(elements) == 1
+    assert energy == 1e9
     assert elements[0] == Drift('dmult', 1.0)
