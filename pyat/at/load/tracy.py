@@ -127,7 +127,7 @@ def expand_tracy(contents):
                 chunk = parse_chunk(value, elements, chunks)
                 chunks[key] = chunk
 
-    return chunks['cell']
+    return chunks['cell'], float(variables['energy']) * 1e9
 
 
 def tracy_element_from_string(name, element_string, variables):
@@ -150,9 +150,10 @@ def tracy_element_from_string(name, element_string, variables):
 
 def load_tracy(filename, **kwargs):
     def elem_iterator(params, tracy_file):
-        with open(tracy_file) as f:
+        with open(params.setdefault('tracy_file', tracy_file)) as f:
             contents = f.read()
-            element_lines = expand_tracy(contents)
+            element_lines, energy = expand_tracy(contents)
+            params.setdefault('energy', energy)
             for line in element_lines:
                 yield line
 
