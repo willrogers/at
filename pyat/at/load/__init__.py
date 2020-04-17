@@ -7,3 +7,4 @@ from .allfiles import *
 from .matfile import *
 from .reprfile import *
 from .tracy import *
+from .elegant import *
