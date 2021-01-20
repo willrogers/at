@@ -5,6 +5,12 @@ on:
     tags:
       - pyat-*
 
+
+defaults:
+  run:
+    working-directory: ./pyat
+
+
 jobs:
   build_wheels:
     runs-on: ${{ matrix.os }}
@@ -39,12 +45,6 @@ jobs:
 
       #- name: Install dependencies
       #  run: #python -m pip install -r requirements.txt
-
-      - name: cd
-        run: |
-         cd pyat
-         pwd
-         ls -al
 
       - name: Build wheels
         run: cd pyat; python -m cibuildwheel --output-dir wheelhouse
