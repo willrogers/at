@@ -38,7 +38,6 @@ jobs:
 
       - name: Prepare source
         run: |
-          cd pyat
           python -m pip install numpy==1.14.3
           python setup.py build
       #    rm -rf build
@@ -47,7 +46,7 @@ jobs:
       #  run: #python -m pip install -r requirements.txt
 
       - name: Build wheels
-        run: cd pyat; python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_SKIP: cp39-*
           CIBW_BEFORE_BUILD: pip install --upgrade setuptools; pip install numpy==1.14.3; pwd; ls -al; ls -al /project
