@@ -49,6 +49,6 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_SKIP: cp39-*
-          CIBW_BEFORE_BUILD: pip install --upgrade setuptools; pip install numpy==1.14.3; pwd; ls -al; ls -al /project
+          CIBW_BEFORE_BUILD: pip install --upgrade setuptools; pip install numpy==1.14.3
           CIBW_BUILD_VERBOSITY: 1
 
