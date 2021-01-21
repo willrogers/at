@@ -47,7 +47,20 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
+          # Skip Python 3.9 since it won't compile with numpy 1.14.3.
           CIBW_SKIP: 'cp39-*'
           CIBW_BEFORE_BUILD: pip install numpy==1.14.3
           CIBW_BUILD_VERBOSITY: 1
 
+      - name: Build sdist
+        run: python setup.py sdist
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./dist/*.tar.gz
