@@ -7,11 +7,9 @@ on:
     tags:
       - pyat-*
 
-
 defaults:
   run:
-    working-directory: ./pyat
-
+    working-directory: pyat
 
 jobs:
   build_wheels:
