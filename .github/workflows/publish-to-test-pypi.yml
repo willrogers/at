@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-10.15, windows-2019]
+        os: [ubuntu-18.04]
 
     steps:
       - uses: actions/checkout@v2
@@ -53,7 +53,12 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Build sdist
-        run: python setup.py sdist
+        run: |
+          python setup.py sdist
+          pwd
+          ls -al
+          ls -al dist
+          ls -al wheelhouse
 
       - name: Upload wheels
         uses: actions/upload-artifact@v2
