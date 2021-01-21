@@ -53,19 +53,18 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
 
       - name: Build sdist
-        run: |
-          python setup.py sdist
-          pwd
-          ls -al
-          ls -al dist
-          ls -al wheelhouse
+        run: python setup.py sdist
 
       - name: Upload wheels
         uses: actions/upload-artifact@v2
         with:
+          name: wheels
           path: ./pyat/wheelhouse/*.whl
+          if-no-files-found: error
 
       - name: Upload sdist
         uses: actions/upload-artifact@v2
         with:
+          name: tar.gz
           path: ./pyat/dist/*.tar.gz
+          if-no-files-found: error
