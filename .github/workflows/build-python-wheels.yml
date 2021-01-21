@@ -1,6 +1,6 @@
 # See the Python documentation: https://packaging.python.org/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 # and cibuildwheel: https://cibuildwheel.readthedocs.io/en/stable/
-name: Publish distribution to Test PyPI
+name: Build and upload wheels and sdist
 
 on:
   push:
