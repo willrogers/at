@@ -1,11 +1,16 @@
 pyAT
 ====
 
-pyAT is a Python interface to the pass methods defined in Accelerator Toolbox,
-implemented by compiling the C code used in the AT 'integrators' plus a Python
-extension.
+Accelerator Toolbox is a code used for simulating particle accelerators, used
+particularly for synchrotron light sources. It is hosted on `Github
+<https://github.com/atcollab>`_. Its original implementation is in Matlab.
 
-It supports Python 2.7 (deprecated) and 3.5 to 3.8.
+pyAT is a Python interface to Accelerator Toolbox. It uses the 'pass methods'
+defined in Accelerator Toolbox, implemented by compiling the C code used in the
+AT 'integrators' into a Python extension. These pass methods are used by
+higher-level functions to provide physics results.
+
+pyAT supports Python 2.7 (deprecated) and 3.5 to 3.8.
 
 For some examples of how to use pyAT, see pyat_examples.rst.
 
@@ -27,7 +32,8 @@ All the binaries should be built when building the Python extension.
 
 It is easiest to do this using a virtualenv. inside pyat:
 
-We recommend using Python 3. If you are still using Python 2, you need virtualenv installed:
+Python 2 support will be removed soon. If you are still using Python 2, you
+need virtualenv installed:
 
 * ``virtualenv --no-site-packages venv``
 
@@ -84,30 +90,13 @@ Releasing a version to PyPI
 Because pyAT compiles C code, releasing a version is not simple. The code
 must be compiled for different operating systems and Python versions.
 
-To do this, we use the continuous integration services Travis CI (for Linux
-and Mac) and Appveyor (for Windows). When a tag of the form pyat-x.y.z is
-pushed to Github, wheels for each of the different platforms will be built
-and automatically uploaded to
-https://test.pypi.org/project/accelerator-toolbox/. Once there, someone
-should manually test that the wheels are working correctly, then they can
-manually download the files and upload them to PyPI itself. Note that this
-was 46 different files for pyat-0.0.4 covering different platforms and
+To do this, we use the continuous integration service Github Actions.
+When a tag of the form pyat-x.y.z is pushed to Github, wheels for each
+supported platform will be built and automatically uploaded as an 'artifact'.
+
+Once there, someone should manually test that the wheels are working correctly,
+then they can manually download the files and upload them to PyPI itself.
+Note that this was 46 different files for pyat-0.0.4 covering different platforms and
 architectures.
 
-The configuration for this is in .travis.yml and .appveyor.yml, where for tags
-of the correct format the wheels are built using only one of the builds for
-each platform (MacOS, Linux and Windows). This logic may need updating from time
-to time - for example, the wheels are being built and uploaded using the Python
-3.7 build at present.
-
-For Travis to be authenticated to Test PyPI, someone must set the variables
-TWINE_USERNAME and TWINE_PASSWORD in the Travis CI project settings. These
-are not public so it is possible to use personal details; it may be best
-not to use the same password for PyPI.
-
-A similar process is necessary for the Appveyor settings. You can click the
-little lock to keep the variable values private.
-
-Because there are complications putting special characters into these
-environment variables it may be simpler to ensure your Test PyPI password
-contains only alphanumeric characters.
+The configuration for this is in .github/workflows/build-wheels.yml.
